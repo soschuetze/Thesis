@@ -13,7 +13,7 @@ def remove_emojis(tweets_df):
 	return tweets_df
 
 def replace_mentions(tweets_df):
-	tweets_df['text'] = tweets_df['text'].apply(lambda x: re.replace("@([a-zA-Z0-9_]{1,50})", "MENTION",str(x)))
+	tweets_df['text'] = tweets_df['text'].apply(lambda x: re.sub("@([a-zA-Z0-9_]{1,50})", "MENTION",str(x)))
 
 	return tweets_df
 
