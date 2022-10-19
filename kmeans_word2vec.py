@@ -16,27 +16,21 @@ from nltk.corpus import stopwords
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.metrics import silhouette_samples, silhouette_score
 
-def clean_tokenize_text(text, tokenizer, stopwords):
-	text = str(text).lower()  # Lowercase words
-	text = re.sub(r"\[(.*?)\]", "", text)  # Remove [+XYZ chars] in content
-	text = re.sub(r"\s+", " ", text)  # Remove multiple spaces in content
-	text = re.sub(r":", "", text)  # Remove multiple spaces in content
-	text = re.sub(r"…", "", text)  # Remove ellipsis (and last word)
-	text = re.sub(r"(?<=\w)-(?=\w)", " ", text)  # Replace dash between words
-	text = re.sub(f"[{re.escape(string.punctuation)}]", "", text)
+import matplotlib.pyplot as plt
+
+
+def tokenize_text(text, tokenizer, stopwords):
 	tweet_tokenizer = TweetTokenizer()
 	tokens = tweet_tokenizer.tokenize(text)
-	tokens = [t for t in tokens if not t in stopwords]  # Remove stopwords
-	tokens = ["" if t.isdigit() else t for t in tokens]  # Remove digits
-	tokens = [t for t in tokens if len(t) > 1]  # Remove short tokens
 	return tokens
 
 def mbkmeans_clusters(X, k, mb, print_silhouette_values):
 	km = MiniBatchKMeans(n_clusters=k, batch_size=mb).fit(X)
-	return km, km.labels_
+	return km, km.labels_, km.cluster_centers_
 
 def vectorize(list_of_docs, model):
     """Generate vectors for list of documents using a Word Embedding"""
+
     features = []
     for tokens in list_of_docs:
     	zero_vector = np.zeros(model.vector_size)
@@ -71,7 +65,7 @@ def main():
 	# Create text column based on title, description, and content
 	df["text_value"] = 0
 	df["text_value"] = df[text_columns].apply(lambda x: " | ".join(x), axis=1)
-	df["tokens"] = df["text_value"].map(lambda x: clean_tokenize_text(x, word_tokenize, custom_stopwords))
+	df["tokens"] = df["text_value"].map(lambda x: tokenize_text(x, word_tokenize, custom_stopwords))
 
 	# Remove duplicated after preprocessing
 	dash, idx = np.unique(df["tokens"], return_index=True)
@@ -90,12 +84,20 @@ def main():
 	vectorized_docs = vectorize(token_sample, model=model)
 	len(vectorized_docs), len(vectorized_docs[0])
 
-	clustering, cluster_labels = mbkmeans_clusters(
+	vector_df = pd.DataFrame(columns=['X','y'])
+	for doc in vectorized_docs:
+		df2 = {'X': doc[0], 'y': doc[1]}
+		vector_df = vector_df.append(df2, ignore_index = True)
+
+	clustering, cluster_labels, centroids = mbkmeans_clusters(
 		X=vectorized_docs,
-		k=10,
+		k=5,
 		mb=1000,
 		print_silhouette_values=True
 		)
+
+	cen_x = [i[0] for i in centroids] 
+	cen_y = [i[1] for i in centroids]
 
 	df_clusters = pd.DataFrame({
     	"text": docs,
@@ -103,8 +105,17 @@ def main():
     	"cluster": cluster_labels
     	})
 
-	print(df_clusters.sample(20))
+	df_clusters['cen_x'] = df_clusters.cluster.map({0:cen_x[0], 1:cen_x[1], 2:cen_x[2], 3:cen_x[3], 4:cen_x[4]})
+	df_clusters['cen_y'] = df_clusters.cluster.map({0:cen_y[0], 1:cen_y[1], 2:cen_y[2], 3:cen_y[3], 4:cen_y[4]})
+
+	# define and map colors
+	colors = ['#DF2020', '#81DF20', '#2095DF', '#DF20DF', '#DC20DF']
+	df_clusters['c'] = df_clusters.cluster.map({0:colors[0], 1:colors[1], 2:colors[2], 3:colors[3], 4:colors[4]})
+
 	df_clusters.sample(500).to_csv("kmeans_tweets.csv", sep=',', encoding='utf-8')
+
+	plt.scatter(vector_df.X, vector_df.y, c=df_clusters.c, alpha = 0.6, s=10)
+	plt.show()
 
 
 main()
