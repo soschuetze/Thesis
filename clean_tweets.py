@@ -28,9 +28,13 @@ def replace_urls(tweets_df):
 
 def remove_stop_words(tweets_df, stopwords):
 	tweets_df['text'] = tweets_df['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stopwords)]))
+	
+	return tweets_df
 
 def remove_punctuation(tweets_df):
 	tweets_df['text'] = tweets_df['text'].str.replace(r'[^\w\s]','')
+	
+	return tweets_df
 
 def main():
 	stopwords = nltk.corpus.stopwords.words('english')
