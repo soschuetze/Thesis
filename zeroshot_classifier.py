@@ -19,13 +19,15 @@ nli_model = AutoModelForSequenceClassification.from_pretrained('facebook/bart-la
 tokenizer = AutoTokenizer.from_pretrained('facebook/bart-large-mnli')
 
 tweets_df = pd.read_csv("tweets_cleaned.csv", index_col = [0])
-cleaned_tweets = tweets_df['text'].values
+tweets_df = tweets_df[tweets_df['id'].notna()]
+docs = tweets_df['text'].tolist()
 
 predictions = []
 with open(r'bart_classifications', 'w') as fp:
     for i in range(20):
-        t = cleaned_tweets[i]
+        t = docs[i]
         sequence = t
         prediction = classifier(sequence, candidate_labels)['labels'][0]
         tweet_prediction = f"{t} : {prediction}"
         fp.write("%s\n" % tweet_prediction)
+
