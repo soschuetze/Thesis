@@ -1,16 +1,21 @@
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
 from bertopic import BERTopic
 import pandas as pd
 
 def main():
+    sentence_model = SentenceTransformer("distilbert-base-nli-mean-tokens")
+
     tweets_df = pd.read_csv("tweets_cleaned.csv", index_col = [0])
-    cleaned_tweets = tweets_df['text'].values
+    tweets_df = tweets_df[tweets_df['id'].notna()]
+    docs = tweets_df['text'].tolist()
 
-    topic_model = BERTopic(nr_topics=5)
-    topics, probs = topic_model.fit_transform(cleaned_tweets)
+    embeddings = sentence_model.encode(docs, show_progress_bar=False)
 
-    topics_time = topic_model.topics_over_time(cleaned_tweets, tweets_df["created_at"].tolist())
+    topic_model = BERTopic(nr_topics="auto")
+    topics, probs = topic_model.fit_transform(docs, embeddings)
 
-    print(topic_model.get_topic_info())
+    print(topic_model.get_topics())
 
 main()
 
