@@ -1,12 +1,7 @@
-import json
-import os
-import re
 import pandas as pd
-import matplotlib.pyplot as plt
 import nltk
-from cleantext import clean
-import unidecode
 from transformers import pipeline
+
 classifier = pipeline("zero-shot-classification",
                       model="facebook/bart-large-mnli")
 
@@ -23,11 +18,13 @@ tweets_df = tweets_df[tweets_df['id'].notna()]
 docs = tweets_df['text'].tolist()
 
 predictions = []
-with open(r'bart_classifications', 'w') as fp:
-    for i in range(20):
-        t = docs[i]
-        sequence = t
-        prediction = classifier(sequence, candidate_labels)['labels'][0]
-        tweet_prediction = f"{t} : {prediction}"
-        fp.write("%s\n" % tweet_prediction)
+classifications_df = pd.DataFrame(columns=['tweet','classification'])
+for i in range(20):
+    t = docs[i]
+    sequence = t
+    prediction = classifier(sequence, candidate_labels)['labels'][0]
 
+    row = {'tweet': t, 'classification': prediction}
+    classifications_df = classifications_df.append(row, ignore_index = True)
+
+classifications_df.to_csv("bart_classifications.csv", sep=',', encoding='utf-8')    
