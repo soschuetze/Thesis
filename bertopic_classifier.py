@@ -12,10 +12,15 @@ def main():
 
     embeddings = sentence_model.encode(docs, show_progress_bar=False)
 
-    topic_model = BERTopic(nr_topics="auto")
+    topic_model = BERTopic(nr_topics=10)
     topics, probs = topic_model.fit_transform(docs, embeddings)
 
-    print(topic_model.get_topics())
+
+    topic_model_info = topic_model.get_topic_info()
+    print(topic_model_info)
+
+    topic_model_info.to_csv("bertopic_classifications.csv", sep=',', encoding='utf-8')
 
 main()
+
 
