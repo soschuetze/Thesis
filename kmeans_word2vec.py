@@ -50,7 +50,7 @@ def vectorize(list_of_docs, model):
     return features
 
 def main():
-	tweets = pd.read_csv("tweets_cleaned.csv", index_col = [0])
+	tweets = pd.read_csv("tweets.csv", index_col = [0])
 	tweets_text = tweets[['text']].copy()
 	custom_stopwords = set(stopwords.words("english"))
 	text_columns = ["text"]
@@ -85,19 +85,13 @@ def main():
 	len(vectorized_docs), len(vectorized_docs[0])
 
 	vector_df = pd.DataFrame(columns=['X','y'])
-	for doc in vectorized_docs:
-		df2 = {'X': doc[0], 'y': doc[1]}
-		vector_df = vector_df.append(df2, ignore_index = True)
 
 	clustering, cluster_labels, centroids = mbkmeans_clusters(
 		X=vectorized_docs,
-		k=5,
+		k=3000,
 		mb=1000,
 		print_silhouette_values=True
 		)
-
-	cen_x = [i[0] for i in centroids] 
-	cen_y = [i[1] for i in centroids]
 
 	df_clusters = pd.DataFrame({
     	"text": docs,
@@ -105,17 +99,7 @@ def main():
     	"cluster": cluster_labels
     	})
 
-	df_clusters['cen_x'] = df_clusters.cluster.map({0:cen_x[0], 1:cen_x[1], 2:cen_x[2], 3:cen_x[3], 4:cen_x[4]})
-	df_clusters['cen_y'] = df_clusters.cluster.map({0:cen_y[0], 1:cen_y[1], 2:cen_y[2], 3:cen_y[3], 4:cen_y[4]})
-
-	# define and map colors
-	colors = ['#DF2020', '#81DF20', '#2095DF', '#DF20DF', '#DC20DF']
-	df_clusters['c'] = df_clusters.cluster.map({0:colors[0], 1:colors[1], 2:colors[2], 3:colors[3], 4:colors[4]})
-
-	df_clusters.sample(500).to_csv("kmeans_tweets.csv", sep=',', encoding='utf-8')
-
-	plt.scatter(vector_df.X, vector_df.y, c=df_clusters.c, alpha = 0.6, s=10)
-	plt.show()
+	df_clusters.groupby("cluster").sample(n=1, random_state=1).to_csv("tweet_samples.csv", sep=',', encoding='utf-8')
 
 
 main()
