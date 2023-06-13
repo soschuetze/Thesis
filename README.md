@@ -66,7 +66,7 @@ Download all files and keep in the same folder. The binary_tweets.csv and new_la
 6.  Bertopic_classifier.py and lda_topic_modeling.ipynb can be run for unsupervised classification.
 7.  Kmeans_word2vec.py was used to obtain a random sample of 10,000 of the tweets to use in training and testing all models.
 
-##Results
+## Results
 Binary Distilbert: F1-Score of 0.87
 Multi-label Distilbert: F1-Score of 0.83
 
