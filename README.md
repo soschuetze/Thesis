@@ -6,8 +6,6 @@ This project explores the research question of which natural language processing
 * [General Info](#general-information)
 * [Setup](#setup)
 * [Usage](#usage)
-* [Project Status](#project-status)
-* [Room for Improvement](#room-for-improvement)
 
 
 ## General Information
