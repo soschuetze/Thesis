@@ -2,6 +2,8 @@
 
 This project explores the research question of which natural language processing techniques and machine learning models best classify the forms of activism contained in #BlackLivesMatter tweets.
 
+![Proportion of tweets by label per year](RelevantTweets.png)
+
 ## Table of Contents
 * [General Info](#general-information)
 * [Setup](#setup)
